@@ -464,16 +464,16 @@ function SocialFeedSection() {
 
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-6 mt-12">
-            <SocialCard name="Sarah J." handle="@sarah_ux" time="2m ago" content="The production quality at #EventEkhanei summits is just another level! 🚀" tags={['#Design', '#Tech']} />
-            <SocialCard name="Dev DAO" handle="@dev_dao" time="1h ago" content="Just dropped our new roadmap at the community meetup. Thanks for hosting us!" tags={['#Web3', '#Community']} />
+            <SocialCard name="Lihan" handle="@lihan_dev" time="2m ago" content="The production quality at #EventKoi summits is just another level! 🚀" tags={['#Design', '#Tech']} />
+            <SocialCard name="Nafiz" handle="@nafiz_events" time="1h ago" content="Just dropped our new roadmap at the community meetup. Thanks for hosting us!" tags={['#Web3', '#Community']} />
           </div>
           <div className="space-y-6">
-            <SocialCard name="Mark T." handle="@mark_events" time="5m ago" content="Checking in with the new QR scanner was blazing fast. Literally 1 second. ⚡️" tags={['#CX', '#EventTech']} highlight />
-            <SocialCard name="CryptoDaily" handle="@cryptodaily" time="2h ago" content="Sold out our NFT gallery opening in 10 minutes. The backend held up perfectly." tags={['#NFT', '#SoldOut']} />
+            <SocialCard name="Mahi" handle="@mahi_qr" time="5m ago" content="Checking in with the new QR scanner was blazing fast. Literally 1 second. ⚡️" tags={['#CX', '#EventTech']} highlight />
+            <SocialCard name="Shadhu" handle="@shadhu_daily" time="2h ago" content="Sold out our tech gallery opening in 10 minutes. The backend held up perfectly." tags={['#Dev', '#SoldOut']} />
           </div>
           <div className="space-y-6 mt-8">
-            <SocialCard name="Elena R." handle="@elena_arts" time="15m ago" content="Can't wait for the workshop tomorrow. The schedule UI is so clean." tags={['#Workshop', '#Learning']} />
-            <SocialCard name="StartupInc" handle="@startup_inc" time="3h ago" content="Networking features actually work. Met 3 potential co-founders already." tags={['#Networking', '#Startup']} />
+            <SocialCard name="Tasnuba" handle="@tas_arts" time="15m ago" content="Can't wait for the workshop tomorrow. The schedule UI is so clean." tags={['#Workshop', '#Learning']} />
+            <SocialCard name="Tanvir" handle="@tanvir_inc" time="3h ago" content="Networking features actually work. Met 3 potential co-founders already." tags={['#Networking', '#Startup']} />
           </div>
         </div>
       </div>

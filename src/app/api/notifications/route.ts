@@ -2,15 +2,21 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
 export async function GET(request: Request) {
+    let connection;
     try {
         const { searchParams } = new URL(request.url);
-        const userId = searchParams.get('user_id');
+        const userIdRaw = searchParams.get('user_id');
 
-        if (!userId) {
-            return NextResponse.json({ message: 'User ID required' }, { status: 400 });
+        if (!userIdRaw || userIdRaw === 'undefined' || userIdRaw === 'null') {
+            return NextResponse.json({ message: 'Valid User ID required' }, { status: 400 });
         }
 
-        const connection = await pool.getConnection();
+        const userId = parseInt(userIdRaw);
+        if (isNaN(userId)) {
+            return NextResponse.json({ message: 'User ID must be a number' }, { status: 400 });
+        }
+
+        connection = await pool.getConnection();
 
         // 1. LAZY CHECK: Event Reminders (simulate cron)
         // Find bookings for this user for events starting in < 24 hours 
@@ -45,11 +51,12 @@ export async function GET(request: Request) {
             LIMIT 20
         `, [userId]);
 
-        connection.release();
         return NextResponse.json(notifications);
     } catch (error) {
-        console.error(error);
+        console.error('Notification API Error:', error);
         return NextResponse.json({ message: 'Error fetching notifications' }, { status: 500 });
+    } finally {
+        if (connection) connection.release();
     }
 }
 

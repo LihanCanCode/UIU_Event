@@ -17,6 +17,7 @@ export default function Dashboard() {
     const [requestStatus, setRequestStatus] = useState<'idle' | 'pending' | 'success'>('idle');
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [stats, setStats] = useState({ organizedCount: 0, purchasedCount: 0 });
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -28,8 +29,25 @@ export default function Dashboard() {
     }, [router]);
 
     useEffect(() => {
-        if (user) fetchEvents();
+        if (user) {
+            fetchEvents();
+            fetchStats();
+        }
     }, [user]);
+
+    const fetchStats = async () => {
+        const userId = user.id || user.userId || (user as any).insertId;
+        if (!userId) return;
+        try {
+            const res = await fetch(`/api/user/stats?user_id=${userId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setStats(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch stats', error);
+        }
+    };
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -187,7 +205,7 @@ export default function Dashboard() {
                             </div>
                             <h3 className="text-gray-400 text-sm font-medium mb-1">Total Organized</h3>
                             <p className="text-4xl font-bold text-white mb-4">
-                                {user.role === 'organizer' ? '12' : '0'}
+                                {stats.organizedCount}
                                 <span className="text-sm font-normal text-gray-500 ml-2">events</span>
                             </p>
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -201,7 +219,7 @@ export default function Dashboard() {
                             </div>
                             <h3 className="text-gray-400 text-sm font-medium mb-1">Tickets Purchased</h3>
                             <p className="text-4xl font-bold text-white mb-4">
-                                {user.role === 'attendee' ? events.length : '5'}
+                                {stats.purchasedCount}
                                 <span className="text-sm font-normal text-gray-500 ml-2">tickets</span>
                             </p>
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -349,6 +367,7 @@ function NotificationBell({ userId }: { userId: string }) {
     }, [userId]);
 
     const fetchNotifications = async () => {
+        if (!userId || userId === 'undefined' || userId === 'null') return;
         try {
             const res = await fetch(`/api/notifications?user_id=${userId}`);
             if (res.ok) {
@@ -357,7 +376,7 @@ function NotificationBell({ userId }: { userId: string }) {
                 setUnreadCount(data.filter((n: any) => !n.is_read).length);
             }
         } catch (e) {
-            console.error(e);
+            console.error('Failed to fetch notifications', e);
         }
     };
 
