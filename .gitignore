@@ -43,15 +43,3 @@ next-env.d.ts
 # uploads
 public/uploads/*
 !public/uploads/.gitkeep
-
-# IDEs and Editors
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS generated files
-Thumbs.db
-
-# Logs
-*.log
