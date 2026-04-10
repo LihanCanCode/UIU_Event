@@ -5,19 +5,19 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-    User, Ticket, Bell, Shield, Calendar, Plus, Scan, LayoutDashboard,
-    Search, MapPin, Clock, ChevronRight, LogOut, ArrowUpRight
+    User, Ticket, Bell, Calendar, Plus, LayoutDashboard,
+    Search, MapPin, Clock, ChevronRight, ChevronDown, LogOut, ArrowUpRight
 } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle';
+
 
 export default function Dashboard() {
     const router = useRouter();
     const [user, setUser] = useState<any>(null);
     const [events, setEvents] = useState<any[]>([]);
-    const [requestStatus, setRequestStatus] = useState<'idle' | 'pending' | 'success'>('idle');
     const [searchQuery, setSearchQuery] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All');
     const [isLoading, setIsLoading] = useState(true);
-    const [stats, setStats] = useState({ organizedCount: 0, purchasedCount: 0 });
+    const [stats, setStats] = useState({ organizedCount: 0 });
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -72,25 +72,7 @@ export default function Dashboard() {
         }
     };
 
-    const handleRequestRole = async () => {
-        if (!user) return;
-        try {
-            const res = await fetch('/api/user/request-role', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: user.id || user.userId || (user as any).insertId })
-            });
-            if (res.ok) {
-                alert('Request submitted! Admin will review it.');
-                setRequestStatus('success');
-            } else {
-                const data = await res.json();
-                alert(data.message || 'Request failed');
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
+
 
     const handleLogout = () => {
         localStorage.removeItem('user');
@@ -98,6 +80,9 @@ export default function Dashboard() {
     };
 
     if (!user) return null;
+
+    const uniqueCategories = ['All', ...Array.from(new Set(events.map(e => e.category_name).filter(Boolean)))];
+    const filteredEvents = activeCategory === 'All' ? events : events.filter(e => e.category_name === activeCategory);
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-cyan-500/30">
@@ -145,43 +130,17 @@ export default function Dashboard() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                        <NavButton href="/dashboard/profile" icon={<User size={16} />} label="Profile" />
-                        {(user.role === 'attendee' || user.role === 'organizer') && (
-                            <NavButton href="/dashboard/tickets" icon={<Ticket size={16} />} label="My Tickets" />
-                        )}
 
-                        <NotificationBell userId={user.id || user.userId || (user as any).insertId} />
 
                         <div className="h-6 w-px bg-white/10 hidden sm:block" />
 
-                        {user.role === 'admin' && (
-                            <Link href="/dashboard/admin" className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all text-sm font-semibold flex items-center gap-2">
-                                <Shield size={16} /> Admin
-                            </Link>
-                        )}
+                        <Link href="/dashboard/create-event" className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all flex items-center gap-2">
+                            <Plus size={16} /> Create Event
+                        </Link>
 
-                        {user.role === 'organizer' && (
-                            <>
-                                <Link href="/dashboard/create-event" className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold text-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all flex items-center gap-2">
-                                    <Plus size={16} /> Create Event
-                                </Link>
-                                <Link href="/dashboard/scan" className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all text-sm font-semibold flex items-center gap-2">
-                                    <Scan size={16} /> Scan
-                                </Link>
-                            </>
-                        )}
 
-                        {user.role === 'attendee' && (
-                            <button
-                                onClick={handleRequestRole}
-                                disabled={requestStatus === 'success'}
-                                className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 transition-all text-sm font-semibold flex items-center gap-2 disabled:opacity-50"
-                            >
-                                {requestStatus === 'success' ? 'Pending...' : 'Become Organizer'}
-                            </button>
-                        )}
 
-                        <ThemeToggle />
+
 
                         <button onClick={handleLogout} className="p-2.5 rounded-xl hover:bg-white/5 text-gray-400 hover:text-foreground transition-colors">
                             <LogOut size={18} />
@@ -189,104 +148,105 @@ export default function Dashboard() {
                     </div>
                 </motion.header>
 
-                {/* Main Content Grid */}
+                {/* Main Content Area: Sidebar + Events Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    
+                    {/* Highlighted Stats Column (Left) */}
+                    <div className="lg:col-span-1">
+                        <motion.div 
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="bg-[#161B2B] border border-cyan-500/20 rounded-[2.5rem] p-8 flex flex-col justify-between group overflow-hidden relative sticky top-32 shadow-2xl shadow-cyan-500/5 hover:border-cyan-500/40 transition-all duration-500"
+                        >
+                            {/* Decorative Elements */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-[80px] -mr-16 -mt-16 group-hover:bg-cyan-500/20 transition-all duration-700" />
+                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/10 rounded-full blur-[60px] -ml-12 -mb-12 group-hover:bg-blue-500/20 transition-all duration-700" />
+                            
+                            <div className="relative z-10">
+                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center text-cyan-400 border border-cyan-500/20 mb-8 group-hover:scale-110 transition-transform duration-500 shadow-inner">
+                                    <LayoutDashboard size={32} />
+                                </div>
+                                
+                                <h3 className="text-gray-400 text-sm font-bold uppercase tracking-[0.2em] mb-4">Focus</h3>
+                                <div className="flex flex-col">
+                                    <span className="text-7xl font-black text-white tracking-tighter mb-2 group-hover:text-cyan-400 transition-colors duration-500 leading-none">
+                                        {stats.organizedCount}
+                                    </span>
+                                    <span className="text-lg font-bold text-gray-400">Total Events</span>
+                                    <span className="text-xs text-cyan-500/60 font-medium mt-1">Successfully Managed</span>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-12 pt-8 border-t border-white/5 relative z-10">
+                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    Active Status
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
 
-                    {/* Left Sidebar / Stats */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="lg:col-span-1 space-y-6"
-                    >
-                        <div className="bg-card border-border-custom rounded-3xl p-6 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                                <LayoutDashboard size={100} />
-                            </div>
-                            <h3 className="text-gray-400 text-sm font-medium mb-1">Total Organized</h3>
-                            <p className="text-4xl font-bold text-white mb-4">
-                                {stats.organizedCount}
-                                <span className="text-sm font-normal text-gray-500 ml-2">events</span>
-                            </p>
-                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full w-3/4 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" />
-                            </div>
-                        </div>
-
-                        <div className="bg-card border-border-custom rounded-3xl p-6 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                                <Ticket size={100} />
-                            </div>
-                            <h3 className="text-gray-400 text-sm font-medium mb-1">Tickets Purchased</h3>
-                            <p className="text-4xl font-bold text-white mb-4">
-                                {stats.purchasedCount}
-                                <span className="text-sm font-normal text-gray-500 ml-2">tickets</span>
-                            </p>
-                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full w-1/4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Right Content / Events */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="lg:col-span-3 space-y-8"
-                    >
+                    {/* Events Grid (Right) */}
+                    <div className="lg:col-span-3 space-y-8">
                         {/* Search & Filter */}
-                        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-card border-border-custom rounded-2xl p-4">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-[#161B2B]/50 backdrop-blur-sm border border-white/5 rounded-[2rem] p-4">
                             <div className="relative w-full sm:max-w-md group">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={18} />
                                 <input
                                     type="text"
                                     placeholder="Search events..."
-                                    className="w-full bg-background border-border-custom rounded-xl py-3 pl-12 pr-4 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 transition-all font-medium text-sm"
+                                    className="w-full bg-[#0B0F1A] border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 transition-all font-medium text-sm"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <div className="flex gap-2">
-                                {/* Categories or filters could go here */}
-                                <button className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">All</button>
-                                <button className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">Music</button>
-                                <button className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">Tech</button>
+                            <div className="relative group shrink-0">
+                                <select
+                                    value={activeCategory}
+                                    onChange={(e) => setActiveCategory(e.target.value)}
+                                    className="appearance-none bg-[#0B0F1A] border border-white/10 rounded-2xl py-3.5 pl-6 pr-14 text-white font-bold tracking-wider focus:outline-none focus:border-cyan-500/50 transition-all cursor-pointer text-xs uppercase"
+                                >
+                                    {uniqueCategories.map(cat => (
+                                        <option key={cat as string} value={cat as string} className="bg-[#0B0F1A] text-white py-2">
+                                            {cat === 'All' ? 'All Categories' : cat}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 group-focus-within:text-cyan-400 transition-colors">
+                                    <ChevronDown size={16} strokeWidth={3} />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Events Grid */}
+                        {/* Events Section */}
                         <div>
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-2xl font-bold flex items-center gap-2">
-                                    <span className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500"><Calendar size={18} /></span>
-                                    Upcoming Events
-                                </h3>
-                            </div>
-
                             {isLoading ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className="h-64 rounded-3xl bg-[#161B2B] animate-pulse border border-white/5" />
+                                        <div key={i} className="h-72 rounded-[2.5rem] bg-[#161B2B] animate-pulse border border-white/5" />
                                     ))}
                                 </div>
-                            ) : events.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-20 text-center rounded-3xl bg-card/50 border border-white/5 border-dashed">
-                                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                                        <Search className="text-gray-500" size={32} />
+                            ) : filteredEvents.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-24 text-center rounded-[2.5rem] bg-[#161B2B]/30 border border-white/5 border-dashed">
+                                    <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                                        <Search className="text-gray-600" size={40} />
                                     </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">No Events Found</h3>
-                                    <p className="text-gray-500">Try adjusting your search or filters</p>
+                                    <h3 className="text-2xl font-bold text-white mb-2">No Events Found</h3>
+                                    <p className="text-gray-500 max-w-xs">
+                                        {activeCategory !== 'All' 
+                                            ? `No active events found in the "${activeCategory}" category.` 
+                                            : "You haven't added any events to your schedule yet."}
+                                    </p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {events.map((event: any) => (
+                                    {filteredEvents.map((event: any) => (
                                         <EventCard key={event.event_id} event={event} onClick={() => router.push(`/dashboard/event/${event.event_id}`)} />
                                     ))}
                                 </div>
                             )}
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -308,148 +268,53 @@ function NavButton({ href, icon, label }: { href: string; icon: React.ReactNode;
 }
 
 function EventCard({ event, onClick }: { event: any; onClick: () => void }) {
-    const statusColors: { [key: string]: string } = {
-        'PUBLISHED': 'bg-green-500/10 text-green-500 border-green-500/20',
-        'DRAFT': 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-        'CANCELLED': 'bg-red-500/10 text-red-500 border-red-500/20',
-    };
+    // Note: status badge removed for minimalist organizer experience
 
     return (
         <motion.div
-            whileHover={{ y: -5 }}
+            whileHover={{ y: -8, scale: 1.02 }}
             onClick={onClick}
-            className="bg-card border-border-custom rounded-3xl p-6 cursor-pointer group hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-500/10 relative overflow-hidden"
+            className="bg-[#161B2B]/80 backdrop-blur-md border border-white/5 rounded-[2.5rem] p-8 cursor-pointer group hover:border-cyan-500/40 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_30px_rgba(34,211,238,0.15)] relative overflow-hidden flex flex-col h-full"
         >
-            <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
-                <ArrowUpRight size={120} className="text-cyan-500 -mr-10 -mt-10" />
-            </div>
+            {/* Ambient background glow on hover */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/0 rounded-full blur-[70px] -mr-10 -mt-10 group-hover:bg-cyan-500/15 transition-all duration-700 pointer-events-none" />
 
-            <div className="flex justify-between items-start mb-6">
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusColors[event.status] || 'bg-gray-500/10 text-gray-500 border-gray-500/20'}`}>
-                    {event.status}
-                </span>
-                <span className="text-xs font-semibold text-gray-400 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+            <div className="flex justify-between items-start mb-6 relative z-10">
+                {/* Visual Accent Icon */}
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/30 group-hover:scale-110 transition-transform duration-500">
+                    <Calendar size={20} strokeWidth={2.5} />
+                </div>
+
+                <span className="text-xs font-bold text-cyan-300 bg-cyan-500/10 px-4 py-2 rounded-full border border-cyan-500/20 shadow-inner tracking-wide uppercase">
                     {event.category_name || 'Event'}
                 </span>
             </div>
 
-            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors line-clamp-1">
-                {event.title}
-            </h3>
+            <div className="flex-grow relative z-10">
+                <h3 className="text-2xl font-black text-white mb-3 group-hover:text-cyan-400 transition-colors line-clamp-2 leading-tight">
+                    {event.title}
+                </h3>
+    
+                <p className="text-gray-400 text-sm mb-6 line-clamp-2 leading-relaxed">
+                    {event.description || 'No description available'}
+                </p>
+            </div>
 
-            <p className="text-gray-400 text-sm mb-6 line-clamp-2 leading-relaxed h-10">
-                {event.description || 'No description available'}
-            </p>
-
-            <div className="space-y-3 pt-6 border-t border-white/5">
-                <div className="flex items-center gap-3 text-sm text-gray-400">
-                    <Calendar size={16} className="text-gray-600" />
+            <div className="space-y-4 pt-6 border-t border-white/5 relative z-10 mt-auto">
+                <div className="flex items-center gap-3 text-sm text-gray-300 font-medium group-hover:text-white transition-colors">
+                    <Clock size={18} className="text-cyan-500" />
                     <span>{new Date(event.start_time).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-400">
-                    <MapPin size={16} className="text-gray-600" />
-                    <span className="line-clamp-1">{event.venue_name || 'Online'}</span>
+                <div className="flex items-center gap-3 text-sm text-gray-300 font-medium group-hover:text-white transition-colors">
+                    <MapPin size={18} className="text-orange-400" />
+                    <span className="line-clamp-1">{event.location || 'Online'}</span>
                 </div>
             </div>
         </motion.div>
     );
 }
 
-function NotificationBell({ userId }: { userId: string }) {
-    const [notifications, setNotifications] = useState<any[]>([]);
-    const [open, setOpen] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
 
-    useEffect(() => {
-        fetchNotifications();
-        const interval = setInterval(fetchNotifications, 10000);
-        return () => clearInterval(interval);
-    }, [userId]);
-
-    const fetchNotifications = async () => {
-        if (!userId || userId === 'undefined' || userId === 'null') return;
-        try {
-            const res = await fetch(`/api/notifications?user_id=${userId}`);
-            if (res.ok) {
-                const data = await res.json();
-                setNotifications(data);
-                setUnreadCount(data.filter((n: any) => !n.is_read).length);
-            }
-        } catch (e) {
-            console.error('Failed to fetch notifications', e);
-        }
-    };
-
-    const markAsRead = async (id: number) => {
-        try {
-            await fetch('/api/notifications', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notification_id: id })
-            });
-            setNotifications(prev => prev.map(n => n.notification_id === id ? { ...n, is_read: true } : n));
-            setUnreadCount(prev => Math.max(0, prev - 1));
-        } catch (e) { console.error(e); }
-    };
-
-    return (
-        <div className="relative">
-            <button
-                onClick={() => setOpen(!open)}
-                className="p-2.5 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors relative"
-            >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background" />
-                )}
-            </button>
-
-            {open && (
-                <>
-                    <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-                    <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        className="absolute right-0 mt-4 w-80 bg-card border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
-                    >
-                        <div className="p-4 border-b border-white/5 flex justify-between items-center">
-                            <h3 className="font-bold text-white text-sm">Notifications</h3>
-                            {unreadCount > 0 && <span className="text-xs text-cyan-400 font-medium">{unreadCount} new</span>}
-                        </div>
-                        <div className="max-h-80 overflow-y-auto custom-scrollbar">
-                            {notifications.length === 0 ? (
-                                <div className="p-8 text-center">
-                                    <Bell size={32} className="mx-auto text-gray-700 mb-3" />
-                                    <p className="text-gray-500 text-xs">All caught up!</p>
-                                </div>
-                            ) : (
-                                <div>
-                                    {notifications.map(n => (
-                                        <div
-                                            key={n.notification_id}
-                                            className={`p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer flex gap-3 ${!n.is_read ? 'bg-cyan-500/05' : ''}`}
-                                            onClick={() => !n.is_read && markAsRead(n.notification_id)}
-                                        >
-                                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!n.is_read ? 'bg-cyan-500' : 'bg-transparent'}`} />
-                                            <div>
-                                                <p className={`text-sm ${!n.is_read ? 'text-white' : 'text-gray-400'}`}>
-                                                    {n.content}
-                                                </p>
-                                                <p className="text-[10px] text-gray-600 mt-1">
-                                                    {new Date(n.created_at).toLocaleString()}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </motion.div>
-                </>
-            )}
-        </div>
-    );
-}
 
 // Add these custom styles to your global CSS for scrollbars if needed
 // .custom-scrollbar::-webkit-scrollbar { width: 6px; }

@@ -5,27 +5,23 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-    Calendar, MapPin, Type, AlignLeft, CreditCard, DollarSign,
-    ArrowLeft, CheckCircle, Loader, Layers, Clock, ShieldCheck
+    Calendar, MapPin, Type, AlignLeft, DollarSign,
+    ArrowLeft, CheckCircle, Loader, Layers, Clock
 } from 'lucide-react';
 
 export default function CreateEvent() {
     const router = useRouter();
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(false);
-    const [venues, setVenues] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
-    const [useCustomVenue, setUseCustomVenue] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         start_time: '',
         end_time: '',
-        venue_id: '',
-        venue_name: '',
-        category_id: '',
-        status: 'PUBLISHED'
+        location: '',
+        category_id: ''
     });
 
     useEffect(() => {
@@ -35,20 +31,15 @@ export default function CreateEvent() {
             return;
         }
         setUser(JSON.parse(storedUser));
-        fetchVenuesAndCategories();
+        fetchCategories();
     }, [router]);
 
-    const fetchVenuesAndCategories = async () => {
+    const fetchCategories = async () => {
         try {
-            const [vRes, cRes] = await Promise.all([
-                fetch('/api/venues'),
-                fetch('/api/categories')
-            ]);
-
-            if (vRes.ok) setVenues(await vRes.json());
+            const cRes = await fetch('/api/categories');
             if (cRes.ok) setCategories(await cRes.json());
         } catch (error) {
-            console.error('Failed to fetch options', error);
+            console.error('Failed to fetch categories', error);
         }
     };
 
@@ -63,9 +54,7 @@ export default function CreateEvent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    organizer_id: user.id || user.userId || (user as any).insertId,
-                    listing_fee: 1000.00,
-                    payment_confirmed: true
+                    organizer_id: user.id || user.userId || (user as any).insertId
                 })
             });
 
@@ -213,38 +202,17 @@ export default function CreateEvent() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Venue */}
                                     <div>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">Venue</label>
-                                            <button
-                                                type="button"
-                                                onClick={() => setUseCustomVenue(!useCustomVenue)}
-                                                className="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-wider hover:underline"
-                                            >
-                                                {useCustomVenue ? 'Select Existing' : 'Enter Custom'}
-                                            </button>
-                                        </div>
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Venue Name</label>
                                         <div className="relative group">
                                             <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={18} />
-                                            {useCustomVenue ? (
-                                                <input
-                                                    type="text"
-                                                    placeholder="Custom Venue Name"
-                                                    className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 transition-all font-medium"
-                                                    value={formData.venue_name}
-                                                    onChange={(e) => setFormData({ ...formData, venue_name: e.target.value, venue_id: '' })}
-                                                />
-                                            ) : (
-                                                <select
-                                                    className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-white focus:outline-none focus:border-cyan-500/50 transition-all font-medium appearance-none"
-                                                    value={formData.venue_id}
-                                                    onChange={(e) => setFormData({ ...formData, venue_id: e.target.value, venue_name: '' })}
-                                                >
-                                                    <option value="" className="bg-[#0B0F1A]">Select a Venue</option>
-                                                    {venues.map((v: any) => (
-                                                        <option key={v.venue_id} value={v.venue_id} className="bg-[#0B0F1A]">{v.name}</option>
-                                                    ))}
-                                                </select>
-                                            )}
+                                            <input
+                                                type="text"
+                                                required
+                                                placeholder="e.g. Dhaka Expo Center"
+                                                className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/50 transition-all font-medium"
+                                                value={formData.location}
+                                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                            />
                                         </div>
                                     </div>
 
@@ -270,89 +238,7 @@ export default function CreateEvent() {
                         </motion.div>
                     </div>
 
-                    {/* Payment Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="lg:col-span-1"
-                        >
-                            <div className="bg-[#161B2B] border border-white/5 rounded-3xl p-6 h-full flex flex-col justify-center">
-                                <div className="p-3 bg-green-500/10 rounded-xl w-fit text-green-500 mb-4">
-                                    <DollarSign size={24} />
-                                </div>
-                                <h3 className="text-lg font-bold text-white mb-2">Listing Fee</h3>
-                                <div className="flex items-baseline gap-1 mb-2">
-                                    <span className="text-3xl font-black text-white">৳1,000</span>
-                                    <span className="text-sm text-gray-500">BDT</span>
-                                </div>
-                                <p className="text-sm text-gray-400">
-                                    A one-time fee is required to publish your event on the Event Ekhanei platform.
-                                </p>
-                            </div>
-                        </motion.div>
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="lg:col-span-2"
-                        >
-                            <div className="bg-[#161B2B] border border-white/5 rounded-3xl p-8 relative overflow-hidden">
-                                {/* Decorative Background for Payment */}
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-                                <div className="flex items-center gap-3 mb-6">
-                                    <CreditCard className="text-cyan-400" size={24} />
-                                    <h3 className="text-xl font-bold text-white">Payment Method</h3>
-                                </div>
-
-                                {/* Mock Card Form */}
-                                <div className="space-y-5">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Card Number</label>
-                                        <input
-                                            type="text"
-                                            placeholder="0000 0000 0000 0000"
-                                            className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-700 focus:outline-none focus:border-cyan-500/50 transition-all font-mono tracking-widest"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Expiry Date</label>
-                                            <input
-                                                type="text"
-                                                placeholder="MM / YY"
-                                                className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-700 focus:outline-none focus:border-cyan-500/50 transition-all font-mono text-center"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">CVC</label>
-                                            <input
-                                                type="text"
-                                                placeholder="123"
-                                                className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-700 focus:outline-none focus:border-cyan-500/50 transition-all font-mono text-center"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cardholder Name</label>
-                                        <input
-                                            type="text"
-                                            placeholder="NAME ON CARD"
-                                            className="w-full bg-[#0B0F1A] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-700 focus:outline-none focus:border-cyan-500/50 transition-all font-medium uppercase"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="mt-6 flex items-center gap-2 text-xs text-gray-500">
-                                    <ShieldCheck size={14} className="text-green-500" />
-                                    <span>Payments are secure and encrypted.</span>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
 
                     {/* Submit Action */}
                     <motion.div
@@ -369,12 +255,12 @@ export default function CreateEvent() {
                             {loading ? (
                                 <>
                                     <Loader className="w-6 h-6 animate-spin" />
-                                    Processing Payment & Creating Event...
+                                    Creating Event...
                                 </>
                             ) : (
                                 <>
                                     <CheckCircle className="w-6 h-6" />
-                                    Pay & Publish Event
+                                    Publish Event
                                 </>
                             )}
                         </button>

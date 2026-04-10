@@ -16,7 +16,7 @@ import {
   Play,
   ArrowRight
 } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle';
+
 
 export default function LandingPage() {
   const { scrollYProgress } = useScroll();
@@ -78,19 +78,13 @@ function Navbar() {
           <div className="relative w-8 h-8">
             <span className="absolute inset-0 bg-gradient-to-tr from-cyan-400 to-orange-400 rounded-lg blur opacity-75 group-hover:opacity-100 transition-opacity" />
             <div className="relative w-full h-full bg-background rounded-lg border border-border-custom flex items-center justify-center">
-              <span className="text-transparent bg-clip-text bg-gradient-to-tr from-cyan-400 to-orange-400 font-bold text-lg">E</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-tr from-cyan-400 to-orange-400 font-bold text-lg">K</span>
             </div>
           </div>
-          <span className="font-bold text-xl tracking-tight">Event <span className="text-cyan-400">Ekhanei</span></span>
+          <span className="font-bold text-xl tracking-tight text-white">Event<span className="text-cyan-400">KOI</span></span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
-          {['Features', 'Marketplace', 'Community', 'Pricing'].map((item) => (
-            <Link key={item} href={`#${item.toLowerCase()}`} className="hover:text-foreground transition-colors relative group">
-              {item}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-orange-400 transition-all group-hover:w-full" />
-            </Link>
-          ))}
         </div>
 
         <div className="flex items-center gap-4">
@@ -103,7 +97,7 @@ function Navbar() {
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-orange-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
-          <ThemeToggle />
+
         </div>
       </div>
     </motion.nav>
@@ -134,10 +128,9 @@ function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.9]"
+            className="text-6xl md:text-7xl lg:text-9xl font-black tracking-tight leading-[0.9]"
           >
-            Event Mgmt. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-orange-400">Redefined.</span>
+            Event<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-orange-400">KOI</span>
           </motion.h1>
 
           <motion.p
@@ -155,16 +148,6 @@ function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-4"
           >
-            <Link href="/dashboard" className="group relative px-8 py-4 bg-white text-black rounded-full font-bold overflow-hidden transition-transform hover:scale-105">
-              <span className="relative z-10 flex items-center gap-2">
-                Start for free <ArrowRight className="w-4 h-4" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-300 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Link>
-
-            <button className="px-8 py-4 rounded-full border border-border-custom hover:bg-white/5 transition-colors font-semibold flex items-center gap-2">
-              <Play className="w-4 h-4 fill-current" /> Watch Demo
-            </button>
           </motion.div>
 
           <motion.div
@@ -233,7 +216,7 @@ function HeroSection() {
                 <div className="w-full space-y-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Holder</span>
-                    <span className="font-mono text-foreground">Isfak.eth</span>
+                    <span className="font-mono text-foreground">LIHAN</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Seat</span>
@@ -524,9 +507,6 @@ function CallToAction() {
           <Link href="/register" className="px-10 py-5 rounded-full bg-cyan-500 text-black font-bold text-lg hover:bg-cyan-400 transition-colors shadow-[0_0_30px_rgba(34,211,238,0.3)]">
             Get Started Now
           </Link>
-          <Link href="/contact" className="px-10 py-5 rounded-full border border-border-custom hover:bg-white/5 font-bold text-lg transition-colors">
-            Contact Sales
-          </Link>
         </div>
       </div>
     </section>
@@ -539,7 +519,7 @@ function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
         <div className="col-span-2 lg:col-span-2 space-y-6">
           <Link href="/" className="flex items-center gap-2">
-            <span className="font-bold text-2xl tracking-tight text-foreground">Event <span className="text-cyan-400">Ekhanei</span></span>
+            <span className="font-bold text-2xl tracking-tight text-white">Event<span className="text-cyan-400">KOI</span></span>
           </Link>
           <p className="text-gray-500 max-w-xs text-sm">
             Redefining event management with cutting-edge technology and beautiful design.
@@ -578,7 +558,7 @@ function Footer() {
       </div>
 
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 border-t border-border-custom pt-8">
-        <p>&copy; 2026 Event Ekhanei Inc. All rights reserved.</p>
+        <p>&copy; 2026 EventKOI Inc. All rights reserved.</p>
         <div className="flex gap-6 mt-4 md:mt-0">
           <a href="#" className="hover:text-foreground transition-colors">Twitter</a>
           <a href="#" className="hover:text-foreground transition-colors">LinkedIn</a>

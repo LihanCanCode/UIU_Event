@@ -388,7 +388,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**Md. Isfakiqbal Chowdhury**
+**LIHAN Chowdhury**
 
 - GitHub: [@IsTu25](https://github.com/IsTu25)
 - Project Link: [https://github.com/IsTu25/Event-Koi](https://github.com/IsTu25/Event-Koi)

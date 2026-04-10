@@ -2,11 +2,32 @@ const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
 
+// Minimalist .env.local parser to avoid installing extra dependencies
+function loadEnv() {
+    const envPath = path.join(__dirname, '..', '.env.local');
+    if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        envContent.split('\n').forEach(line => {
+            const trimmedLine = line.trim();
+            if (trimmedLine && !trimmedLine.startsWith('#')) {
+                const [key, ...valueParts] = trimmedLine.split('=');
+                const value = valueParts.join('=');
+                if (key && value) {
+                    process.env[key.trim()] = value.trim();
+                }
+            }
+        });
+    }
+}
+
 async function setup() {
+    loadEnv();
+
     const config = {
-        host: 'localhost',
-        user: 'root',
-        password: '123456',
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        port: parseInt(process.env.DB_PORT || '3306'),
         multipleStatements: true
     };
 
@@ -24,13 +45,19 @@ async function setup() {
             '01_schema.sql',
             '02_procedures_triggers.sql',
             '03_views_indexes.sql',
-            '04_seed.sql',
+            '04_lookup_data.sql',
             '14_custom_seed_2026.sql',
             '15_cleanup.sql'
         ];
 
         for (const fileName of sqlFiles) {
             const filePath = path.join(__dirname, '..', 'database', fileName);
+
+            if (!fs.existsSync(filePath)) {
+                console.warn(`⚠️ Warning: ${fileName} not found, skipping...`);
+                continue;
+            }
+
             console.log(`Executing ${fileName}...`);
             let sql = fs.readFileSync(filePath, 'utf8');
 

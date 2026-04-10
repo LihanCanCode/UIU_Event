@@ -18,19 +18,14 @@ export async function GET(request: Request) {
 
         connection = await pool.getConnection();
 
-        // Count TOTAL events in the system
+        // Count TOTAL events for this organizer
         const [organizedRows] = await connection.query(
-            'SELECT COUNT(*) as count FROM Events'
-        );
-
-        // Count TOTAL tickets booked in the system
-        const [purchasedRows] = await connection.query(
-            'SELECT COUNT(*) as count FROM Bookings'
+            'SELECT COUNT(*) as count FROM Events WHERE organizer_id = ?',
+            [userId]
         );
 
         return NextResponse.json({
-            organizedCount: (organizedRows as any)[0].count || 0,
-            purchasedCount: (purchasedRows as any)[0].count || 0
+            organizedCount: (organizedRows as any)[0].count || 0
         });
     } catch (error) {
         console.error('Stats API Error:', error);

@@ -8,7 +8,7 @@
 ## 📦 Step 1: Install Dependencies
 
 ```bash
-cd "/Users/md.isfakiqbalchowdhury/Documents/rdbms project/event-koi"
+cd "/Users/LIHAN/Documents/rdbms project/event-koi"
 npm install
 ```
 

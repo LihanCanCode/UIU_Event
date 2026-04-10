@@ -12,12 +12,9 @@ export async function GET(
       SELECT 
         e.*,
         c.name AS category_name,
-        v.name AS venue_name,
-        v.city AS venue_city,
         u.name AS organizer_name
       FROM Events e
       LEFT JOIN Categories c ON e.category_id = c.category_id
-      LEFT JOIN Venues v ON e.venue_id = v.venue_id
       LEFT JOIN Users u ON e.organizer_id = u.id
       WHERE e.event_id = ?
     `;
@@ -43,14 +40,11 @@ export async function PUT(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { title, description, start_time, end_time, venue_id, category_id, status } = body;
-
-        // Verify ownership could be done here if we passed user_id, but for now we trust the frontend logic
-        // or we could check if user_id matches the organizer_id of the event
+        const { title, description, start_time, end_time, location, category_id } = body;
 
         const query = `
             UPDATE Events 
-            SET title = ?, description = ?, start_time = ?, end_time = ?, venue_id = ?, category_id = ?, status = ?
+            SET title = ?, description = ?, start_time = ?, end_time = ?, location = ?, category_id = ?
             WHERE event_id = ?
         `;
 
@@ -59,9 +53,8 @@ export async function PUT(
             description,
             start_time,
             end_time,
-            venue_id || null,
+            location,
             category_id || null,
-            status || 'PUBLISHED',
             id
         ]);
 
